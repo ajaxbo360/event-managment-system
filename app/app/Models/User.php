@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -44,5 +45,14 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relationships
+     */
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class)->withPivot('status', 'registered_at')->withTimestamps();
     }
 }
