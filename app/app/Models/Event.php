@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -48,5 +49,16 @@ class Event extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class)->withPivot("status", "registered_at")->withTimestamps();
+    }
+
+
+    /**
+     * Accessors & Mutators
+     */
+
+    // Calculate event end time
+    public function getEndTimeAttribute(): Carbon
+    {
+        return $this->date_time->copy()->addMinutes($this->duration);
     }
 }

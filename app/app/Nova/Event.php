@@ -3,32 +3,29 @@
 namespace App\Nova;
 
 use Illuminate\Http\Request;
-use Laravel\Nova\Auth\PasswordValidationRules;
-use Laravel\Nova\Fields\Gravatar;
 use Laravel\Nova\Fields\ID;
-use Laravel\Nova\Fields\Password;
 use Laravel\Nova\Fields\Text;
+use Laravel\Nova\Fields\Textarea;
+use Laravel\Nova\Fields\DateTime;
+use Laravel\Nova\Fields\Number;
 use Laravel\Nova\Fields\Select;
 use Laravel\Nova\Http\Requests\NovaRequest;
-use Laravel\Nova\Fields\BelongsToMany;
 
-class User extends Resource
+class Event extends Resource
 {
-    use PasswordValidationRules;
-
     /**
      * The model the resource corresponds to.
      *
-     * @var class-string<\App\Models\User>
+     * @var class-string<\App\Models\Event>
      */
-    public static $model = \App\Models\User::class;
+    public static $model = \App\Models\Event::class;
 
     /**
      * The single value that should be used to represent the resource when being displayed.
      *
      * @var string
      */
-    public static $title = 'name';
+    public static $title = 'id';
 
     /**
      * The columns that should be searched.
@@ -37,51 +34,65 @@ class User extends Resource
      */
     public static $search = [
         'id',
-        'name',
-        'email',
     ];
 
     /**
      * Get the fields displayed by the resource.
      *
-     * @return array<int, \Laravel\Nova\Fields\Field|\Laravel\Nova\Panel|\Laravel\Nova\ResourceTool|\Illuminate\Http\Resources\MergeValue>
+     * @return array<int, \Laravel\Nova\Fields\Field>
      */
     public function fields(NovaRequest $request): array
     {
         return [
             ID::make()->sortable(),
 
-            Gravatar::make()->maxWidth(50),
-
             Text::make('Name')
                 ->sortable()
                 ->rules('required', 'max:255'),
 
-            Text::make('Email')
-                ->sortable()
-                ->rules('required', 'email', 'max:254')
-                ->creationRules('unique:users,email')
-                ->updateRules('unique:users,email,{{resourceId}}'),
+            Textarea::make('Description')
+                ->rules('required')
+                ->alwaysShow(),
 
-            Password::make('Password')
-                ->onlyOnForms()
-                ->creationRules($this->passwordRules())
-                ->updateRules($this->optionalPasswordRules()),
-            Select::make('Role')
+            DateTime::make('Date & Time', 'date_time')
+                ->sortable()
+                ->rules('required', 'after:now')
+                ->help('Event start date and time'),
+
+            Number::make('Duration (minutes)', 'duration')
+                ->min(120)
+                ->max(4320)
+                ->step(30)
+                ->rules('required', 'integer', 'min:120', 'max:4320')
+                ->help('120 min = 2 hours, 4320 min = 3 days'),
+
+            Text::make('Location')
+                ->sortable()
+                ->rules('required', 'max:255'),
+
+            Number::make('Capacity')
+                ->min(1)
+                ->rules('required', 'integer', 'min:1')
+                ->help('Maximum number of participants'),
+
+            Number::make('Waitlist Capacity')
+                ->min(0)
+                ->rules('required', 'integer', 'min:0')
+                ->help('Maximum waitlist spots'),
+
+            Select::make('Status')
                 ->options([
-                    'admin' => 'Admin',
-                    'user' => 'User',
+                    'draft' => 'Draft',
+                    'published' => 'Published',
                 ])
                 ->displayUsingLabels()
                 ->sortable()
                 ->rules('required'),
-
-            // BelongsToMany::make('Events'),
         ];
     }
 
     /**
-     * Get the cards available for the request.
+     * Get the cards available for the resource.
      *
      * @return array<int, \Laravel\Nova\Card>
      */
