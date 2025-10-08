@@ -61,4 +61,40 @@ class Event extends Model
     {
         return $this->date_time->copy()->addMinutes($this->duration);
     }
+
+    /**
+     * Helper Methods
+     */
+    public function isFull(): bool
+    {
+        return $this->users()->count() >= $this->capacity;
+    }
+
+    public function availableSpots(): int
+    {
+        return max(0, $this->capacity - $this->users()->count());
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === 'published';
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    /**
+     * Scopes
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
+    }
+
+    public function scopeUpcoming($query)
+    {
+        return $query->where('date_time', '>', now());
+    }
 }

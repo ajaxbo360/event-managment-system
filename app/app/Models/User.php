@@ -57,4 +57,32 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Event::class)->withPivot('status', 'registered_at')->withTimestamps();
     }
+
+    /**
+     * Helper Methods
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function hasRegisteredFor(Event $event): bool
+    {
+        return $this->events()->where('event_id', $event->id)->exists();
+    }
+
+    public function hasConflictWith(Event $newEvent): bool
+    {
+        return $this->events()
+            ->whereDate('date_time', $newEvent->date_time->toDateString())
+            ->get()
+            ->contains(function ($existingEvent) use ($newEvent) {
+                $existingStart = $existingEvent->date_time;
+                $existingEnd = $existingEvent->end_time;
+                $newStart = $newEvent->date_time;
+                $newEnd = $newEvent->end_time;
+
+                return ($newStart < $existingEnd) && ($newEnd > $existingStart);
+            });
+    }
 }

@@ -3,6 +3,7 @@
 namespace App\Nova;
 
 use Illuminate\Http\Request;
+use Laravel\Nova\Fields\BelongsToMany;
 use Laravel\Nova\Fields\ID;
 use Laravel\Nova\Fields\Text;
 use Laravel\Nova\Fields\Textarea;
@@ -88,6 +89,9 @@ class Event extends Resource
                 ->displayUsingLabels()
                 ->sortable()
                 ->rules('required'),
+
+            BelongsToMany::make('Registered Users', 'users', User::class),
+
         ];
     }
 

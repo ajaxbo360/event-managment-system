@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log; // <-- add this
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -17,6 +18,8 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
+        Log::info('Request Data:', $request->all()); // <-- debug
+        dd($request->all()); // optional, stops execution and shows data
 
         $user = User::create([
             'name' => $request->name,
@@ -24,9 +27,13 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'user',
         ]);
-        if (User::where('email', $request->email)->exists()) {
-            return response()->json(['message' => 'Email already registered'], 409);
-        }
+        Log::info('Request Data:', $request->all()); // <-- debug
+        dd($request->all()); // optional, stops execution and sho
+        // if (User::where('email', $request->email)->exists()) {
+        //     return response()->json(['message' => 'Email already registered'], 409);
+        // }
+
+
 
         $token = $user->createToken('auth-token')->plainTextToken;
 
