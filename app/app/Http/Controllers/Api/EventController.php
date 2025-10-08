@@ -89,11 +89,16 @@ class EventController extends Controller
     public function join(Request $request, Event $event)
     {
         $user = $request->user();
-
+        // admin can only view not
+        if ($user->isAdmin()) {
+            return response()->json([
+                'message' => 'Admins cannot join events. Use Nova to manage events.',
+            ], 403);
+        }
         // Check if event is published
         if ($event->status !== 'published') {
             return response()->json([
-                'message' => 'Cannot join draft events',
+                'message' => 'Cannot join draft events . Event must be published first . ',
             ], 403);
         }
 

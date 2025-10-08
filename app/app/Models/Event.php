@@ -51,6 +51,12 @@ class Event extends Model
         return $this->belongsToMany(User::class)->withPivot("status", "registered_at")->withTimestamps();
     }
 
+    public function confirmedUsers()
+    {
+        return $this->belongsToMany(User::class, 'event_user')
+            ->withPivot(['status', 'registered_at'])
+            ->wherePivot('status', 'confirmed');
+    }
 
     /**
      * Accessors & Mutators
