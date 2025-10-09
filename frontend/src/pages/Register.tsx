@@ -37,7 +37,7 @@ const Register = () => {
 
     try {
       await register(formData);
-      // navigate("/login"); // Redirect after registration
+      navigate("/login"); // Redirect after registration
     } catch (err: any) {
       setError(err.response?.data?.message || "Registration failed");
     } finally {

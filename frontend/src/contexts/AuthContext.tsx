@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const register = async (registerData: RegisterData) => {
     const data = await authService.register(registerData);
-    setUser(data.user);
+    // setUser(data.user);
     return data;
   };
 

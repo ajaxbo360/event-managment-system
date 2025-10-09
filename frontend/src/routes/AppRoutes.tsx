@@ -16,7 +16,11 @@ const AppRoutes: React.FC = () => {
         path="/login"
         element={!user ? <Login /> : <Navigate to="/dashboard" />}
       />
-      <Route path="/register" element={user ? <Login /> : <Register />} />
+      <Route
+        path="/register"
+        element={!user ? <Register /> : <Navigate to="/dashboard" replace />}
+      />
+
       {/* Protected Routes */}
       <Route
         path="/dashboard"
@@ -28,16 +32,7 @@ const AppRoutes: React.FC = () => {
       />
 
       {/* Default redirect */}
-      <Route
-        path="*"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : (
-            <Navigate to="/dashboard" replace />
-          )
-        }
-      />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 };

@@ -18,13 +18,6 @@ const authService = {
     password: data.password,
     password_confirmation: data.passwordConfirmation,
     });
-
-    // Store token & user in localStorage, just like login
-  if (response.data.token) {
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
-    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-  }
     
     return response.data;
   },
