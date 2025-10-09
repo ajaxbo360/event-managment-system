@@ -22,5 +22,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-# Ignore Composer auth file (sensitive)
+# Ignore Composer auth file
 auth.json

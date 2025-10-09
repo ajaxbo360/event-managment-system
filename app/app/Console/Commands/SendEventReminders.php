@@ -29,7 +29,7 @@ class SendEventReminders extends Command
         // Get all published events happening today
         $eventsToday = Event::whereDate('date_time', today())
             ->where('status', 'published')
-            ->where('date_time', '>', now()) // Only future events today
+            ->where('date_time', '>', now())
             ->with('users')
             ->get();
 

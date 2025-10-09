@@ -64,7 +64,6 @@ class EventSeeder extends Seeder
             'Testing Strategies',
         ];
 
-        // Generate 100 events over the next 30 days
         for ($i = 0; $i < 100; $i++) {
             // Random day in next 30 days
             $daysFromNow = rand(0, 29);
@@ -81,7 +80,6 @@ class EventSeeder extends Seeder
                 ->setTime($hour, $minute, 0);
 
             // Duration: minimum 2 hours (120 min), maximum 3 days (4320 min)
-            // Create variety: mostly short events, some medium, few long
             $durationRand = rand(1, 100);
 
             if ($durationRand <= 70) {
