@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +27,7 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      console.log("email", email);
-
-      await login({ email, password });
+      await login(formData);
       navigate("/dashboard"); // Redirect after successful login
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
@@ -32,8 +37,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded-md shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6">Login</h2>
 
       {error && (
         <Alert variant="destructive" className="mb-4">
@@ -44,21 +49,31 @@ const Login: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">Email:</label>
+          <label htmlFor="email" className="block mb-1 font-medium">
+            Email
+          </label>
           <Input
+            id="email"
+            name="email"
             type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="you@example.com"
             required
           />
         </div>
 
         <div>
-          <label className="block mb-1 font-medium">Password:</label>
+          <label htmlFor="password" className="block mb-1 font-medium">
+            Password
+          </label>
           <Input
+            id="password"
+            name="password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="********"
             required
           />
         </div>
@@ -67,6 +82,7 @@ const Login: React.FC = () => {
           {loading ? "Logging in..." : "Login"}
         </Button>
       </form>
+
       <p className="mt-4 text-center">
         Don’t have an account?{" "}
         <Link to="/register" className="text-gray-600 hover:underline">
