@@ -6,9 +6,11 @@ import api from './api.ts';
  */
 const authService = {
   
+  
   /**
    * Register new user
    */
+  
   async register(data: RegisterData): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>('/register', {
     name: data.name,
@@ -16,15 +18,13 @@ const authService = {
     password: data.password,
     password_confirmation: data.passwordConfirmation,
     });
-    
-    // Store token in localStorage
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Set token in axios default headers
-      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-    }
+
+    // Store token & user in localStorage, just like login
+  if (response.data.token) {
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
+    api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+  }
     
     return response.data;
   },
@@ -72,37 +72,39 @@ const authService = {
     return response.data;
   },
 
-//   /**
-//    * Check if user is authenticated
-//    */
-//   isAuthenticated() {
-//     return !!localStorage.getItem('token');
-//   },
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated() {
+    return !!localStorage.getItem('token');
+  },
 
-//   /**
-//    * Get stored token
-//    */
-//   getToken() {
-//     return localStorage.getItem('token');
-//   },
+  /**
+   * Get stored token
+   */
+  getToken() {
+    return localStorage.getItem('token');
+  },
 
-//   /**
-//    * Get stored user
-//    */
-//   getUser() {
-//     const user = localStorage.getItem('user');
-//     return user ? JSON.parse(user) : null;
-//   },
+  /**
+   * Get stored user
+   */
+  getUser() {
+    const token = this.getToken();
+  if (!token) return null;
+  const user = localStorage.getItem('user');
+  return user ? JSON.parse(user) : null;
+  },
 
-//   /**
-//    * Initialize auth (call on app start)
-//    */
-//   initializeAuth() {
-//     const token = this.getToken();
-//     if (token) {
-//       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-//     }
-//   },
+  /**
+   * Initialize auth (call on app start)
+   */
+  initializeAuth() {
+    const token = this.getToken();
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+  },
 };
 
 export default authService;

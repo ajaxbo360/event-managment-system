@@ -22,3 +22,12 @@ export interface AuthResponse {
   token: string;
   user: User;
 }
+export interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  register: (data: RegisterData) => Promise<AuthResponse>;
+  login: (data: LoginData) => Promise<AuthResponse>;
+  logout: () => Promise<void>;
+  isAuthenticated: () => boolean;
+  isAdmin: () => boolean;
+}
