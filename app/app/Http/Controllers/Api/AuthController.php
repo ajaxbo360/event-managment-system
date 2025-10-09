@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginUserRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log; // <-- add this
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -18,41 +18,38 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        Log::info('Request Data:', $request->all()); // <-- debug
-        dd($request->all()); // optional, stops execution and shows data
+        try {
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => 'user',
-        ]);
-        Log::info('Request Data:', $request->all()); // <-- debug
-        dd($request->all()); // optional, stops execution and sho
-        // if (User::where('email', $request->email)->exists()) {
-        //     return response()->json(['message' => 'Email already registered'], 409);
-        // }
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => 'user',
+            ]);
+            $token = $user->createToken('auth-token')->plainTextToken;
 
-
-
-        $token = $user->createToken('auth-token')->plainTextToken;
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+            return response()->json([
+                'user' => $user,
+                'token' => $token,
+            ], 201);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Registration failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong. Please try again.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
     /**
      * Login user
      */
     public function login(LoginUserRequest $request)
     {
-
         $user = User::where('email', $request->email)->first();
-
-        // if (User::where('email', $request->email)->exists()) {
-        //     return response()->json(['message' => 'Email already registered'], 409);
-        // }
 
         // check
         if (!$user || !Hash::check($request->password, $user->password)) {

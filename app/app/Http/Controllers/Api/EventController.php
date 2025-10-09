@@ -5,17 +5,22 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Notifications\EventRegistrationConfirmation;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class EventController extends Controller
 {
+
+    use AuthorizesRequests;
     /**
      * Get all published events
      */
     public function index(Request $request)
     {
+        // authorize to view
+        $this->authorize('viewAny', Event::class);
         $query = Event::query();
 
         // Users see only published events, admins see all
@@ -46,9 +51,9 @@ class EventController extends Controller
                     'waitlist_capacity' => $event->waitlist_capacity,
                     'status' => $event->status,
                     'registered_count' => $event->users_count,
-                    // 'available_spots' => $event->availableSpots(),
-                    // 'is_full' => $event->isFull(),
-                    // 'is_joined' => $request->user()->hasRegisteredFor($event),
+                    'available_spots' => $event->availableSpots(),
+                    'is_full' => $event->isFull(),
+                    'is_joined' => $request->user()->hasRegisteredFor($event),
                 ];
             });
 
@@ -60,6 +65,8 @@ class EventController extends Controller
      */
     public function show(Request $request, Event $event)
     {
+        $this->authorize('view', $event);
+
         if (!$request->user()->isAdmin() && $event->status !== 'published') {
             return response()->json([
                 'message' => 'Event not found',
@@ -88,26 +95,9 @@ class EventController extends Controller
      */
     public function join(Request $request, Event $event)
     {
-        $user = $request->user();
-        // admin can only view not
-        if ($user->isAdmin()) {
-            return response()->json([
-                'message' => 'Admins cannot join events. Use Nova to manage events.',
-            ], 403);
-        }
-        // Check if event is published
-        if ($event->status !== 'published') {
-            return response()->json([
-                'message' => 'Cannot join draft events . Event must be published first . ',
-            ], 403);
-        }
+        $this->authorize('join', $event);
 
-        // Check if already registered
-        if ($user->hasRegisteredFor($event)) {
-            return response()->json([
-                'message' => 'You are already registered for this event',
-            ], 400);
-        }
+        $user = $request->user();
 
         // Check for time conflicts
         if ($user->hasConflictWith($event)) {
@@ -142,7 +132,6 @@ class EventController extends Controller
             ], 400);
         }
 
-        // Register user with transaction
         try {
             DB::transaction(function () use ($event, $user) {
                 $event->users()->attach($user->id, [
@@ -150,7 +139,7 @@ class EventController extends Controller
                 ]);
             });
 
-            // Send confirmation email (queued)
+            // Send confirmation email
             $user->notify(new EventRegistrationConfirmation($event));
 
             Log::info('User registered for event', [
@@ -185,14 +174,8 @@ class EventController extends Controller
      */
     public function leave(Request $request, Event $event)
     {
+        $this->authorize('leave', $event);
         $user = $request->user();
-
-        if (!$user->hasRegisteredFor($event)) {
-            return response()->json([
-                'message' => 'You are not registered for this event',
-            ], 400);
-        }
-
         $event->users()->detach($user->id);
 
         Log::info('User left event', [

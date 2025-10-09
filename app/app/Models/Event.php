@@ -103,4 +103,12 @@ class Event extends Model
     {
         return $query->where('date_time', '>', now());
     }
+
+    /**
+     * Can accept new registrations (main spots or waitlist)
+     */
+    public function canAcceptRegistrations(): bool
+    {
+        return !$this->isFull() || !$this->isWaitlistFull();
+    }
 }
