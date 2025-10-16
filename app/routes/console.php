@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 Schedule::command('events:send-reminders')
     ->dailyAt('08:00')
     ->timezone('UTC');
+
+Schedule::command('tokens:delete-expired')->dailyAt('02:00');

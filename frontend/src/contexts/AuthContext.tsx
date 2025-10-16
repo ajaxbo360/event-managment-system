@@ -27,6 +27,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     initAuth();
   }, []);
 
+  // Check token expiration
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkTokenExpiration();
+    }, 10 * 1000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const checkTokenExpiration = () => {
+    const tokenTimestamp = localStorage.getItem("token_timestamp");
+    if (tokenTimestamp) {
+      const tokenAge = Date.now() - parseInt(tokenTimestamp);
+      const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+      if (tokenAge > TWENTY_FOUR_HOURS) {
+        console.warn("Token expired, logging out...");
+        logout();
+      }
+    }
+  };
   const initAuth = async () => {
     try {
       authService.initializeAuth();
@@ -60,12 +81,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (loginData: LoginData) => {
     const data = await authService.login(loginData);
     setUser(data.user);
+    // token timestamp
+    localStorage.setItem("token_timestamp", Date.now().toString());
+
     return data;
   };
 
   const logout = async () => {
     await authService.logout();
     setUser(null);
+    localStorage.removeItem("token_timestamp");
   };
 
   const isAuthenticated = () => {
