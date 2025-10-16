@@ -176,6 +176,7 @@ class EventController extends Controller
     {
         $this->authorize('leave', $event);
         $user = $request->user();
+
         $event->users()->detach($user->id);
 
         Log::info('User left event', [

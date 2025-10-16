@@ -31,3 +31,37 @@ export interface AuthContextType {
   isAuthenticated: () => boolean;
   isAdmin: () => boolean;
 }
+
+export interface Event {
+  id: number;
+  name: string;
+  description: string;
+  date_time: string;
+  duration: number; // minutes
+  location: string;
+  capacity: number;
+  waitlist_capacity: number;
+  status: 'published' | 'draft';
+  confirmed_count: number;
+  waitlist_count: number;
+  available_spots: number;
+  available_waitlist_spots: number;
+  is_full: boolean;
+  is_waitlist_full: boolean;
+  is_joined: boolean
+  registered_at?: string;
+}
+
+export interface ConflictingEvent {
+  id: number;
+  name: string;
+  date_time: string;
+  end_time: string;
+}
+
+export interface JoinEventResponse {
+  message: string;
+  is_joined: boolean
+  event: Event;
+  conflicting_events?: ConflictingEvent[];
+}
