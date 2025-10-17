@@ -188,7 +188,7 @@ const Dashboard: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewEvent(event.id)}
-                        className=" text-gray-700 hover:bg-orange-100 whitespace-nowrap flex flex-1"
+                        className=" text-gray-700 hover:bg-orange-100 whitespace-nowrap flex flex-1 cursor-pointer"
                       >
                         View Details
                       </Button>
