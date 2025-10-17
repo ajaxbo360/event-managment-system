@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../contexts/AuthContext.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import { Calendar, Mail, Lock, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -29,11 +30,17 @@ const Login: React.FC = () => {
 
     try {
       await login(formData);
+      toast.success("Welcome back!", {
+        description: "Successfully logged in",
+      });
       navigate("/dashboard");
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again."
-      );
+      const errorMsg =
+        err.response?.data?.message || "Login failed. Please try again.";
+      setError(errorMsg);
+      toast.error("Login Failed", {
+        description: errorMsg,
+      });
     } finally {
       setLoading(false);
     }
@@ -175,7 +182,7 @@ const Login: React.FC = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
-                    className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    className="pl-10 h-12 border-gray-300 focus:border-blue-500 focus:ring-blue-500 "
                     required
                   />
                 </div>

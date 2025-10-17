@@ -21,8 +21,9 @@ import {
   Users,
   Shield,
   AlertTriangle,
+  Bell,
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInHours, isTomorrow, isToday } from "date-fns";
 
 const Dashboard: React.FC = () => {
   const { user, isAdmin } = useAuth();
@@ -99,14 +100,20 @@ const Dashboard: React.FC = () => {
     );
   }
 
+  // Filter events for today and tomorrow for reminders
+  const todayAndTomorrowEvents = myEvents.filter((event) => {
+    const eventDate = new Date(event.date_time);
+    return isToday(eventDate) || isTomorrow(eventDate);
+  });
+
   return (
     <div className="space-y-6">
       {/* Welcome Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
           Welcome back, {user?.name}! 👋
         </h1>
-        <p className="text-gray-600 mt-1">
+        <p className="text-gray-600 mt-1 dark:text-gray-400">
           Here's what's happening with your events
         </p>
       </div>
@@ -115,7 +122,7 @@ const Dashboard: React.FC = () => {
       {isAdmin() && (
         <Alert className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
           <Shield className="w-5 h-5 text-purple-600" />
-          <AlertDescription className="flex items-center justify-between">
+          <AlertDescription className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <p className="font-medium text-purple-900">Admin Access</p>
               <p className="text-sm text-purple-700">
@@ -125,13 +132,71 @@ const Dashboard: React.FC = () => {
             <Button
               onClick={openNovaAdmin}
               variant="outline"
-              className="ml-4 border-purple-300 text-purple-700 hover:bg-purple-100"
+              className="border-purple-300 text-purple-700 hover:bg-purple-100"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
               Open Nova Panel
             </Button>
           </AlertDescription>
         </Alert>
+      )}
+
+      {/* Event Reminders - Today and Tomorrow */}
+      {todayAndTomorrowEvents.length > 0 && (
+        <div className="space-y-3">
+          {todayAndTomorrowEvents.map((event) => {
+            const eventDate = new Date(event.date_time);
+            const hoursUntil = differenceInHours(eventDate, new Date());
+            const isEventToday = isToday(eventDate);
+
+            return (
+              <Alert
+                key={event.id}
+                className="bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-300 shadow-sm"
+              >
+                <Bell className="w-5 h-5 text-orange-600 animate-pulse" />
+                <AlertDescription>
+                  <div className="flex items-start justify-between flex-wrap gap-4">
+                    <div className="flex-1">
+                      <p className="font-semibold text-orange-900 flex items-center gap-2 mb-1">
+                        {isEventToday ? "🔔 Event Today!" : "📅 Event Tomorrow"}
+                      </p>
+                      <p className="text-base font-semibold text-gray-900 mb-2">
+                        {event.name}
+                      </p>
+                      <div className="space-y-1 text-sm text-orange-700">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span>
+                            {format(eventDate, "h:mm a")}
+                            {hoursUntil > 0 && hoursUntil < 24 && (
+                              <span className="font-semibold ml-2">
+                                (in {hoursUntil} hour
+                                {hoursUntil !== 1 ? "s" : ""})
+                              </span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span>{event.location}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewEvent(event.id)}
+                      className="border-orange-300 text-orange-700 hover:bg-orange-100 whitespace-nowrap"
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            );
+          })}
+        </div>
       )}
 
       {/* Stats Grid */}
@@ -162,11 +227,13 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Upcoming Events */}
-      <Card>
+      <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>📅 Upcoming Events</CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <CardTitle className="text-gray-900 dark:text-white">
+              📅 Upcoming Events
+            </CardTitle>
+            <p className="text-sm text-gray-600 mt-1 dark:text-gray-400">
               Next 7 days • {upcomingEvents.length} events
             </p>
           </div>
@@ -180,16 +247,16 @@ const Dashboard: React.FC = () => {
               {upcomingEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-start justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  className="flex items-start justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                   onClick={() => handleViewEvent(event.id)}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-gray-900">
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-300">
                         {event.name}
                       </h4>
                       {event.status === "draft" && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded">
+                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded dark:text-gray-300">
                           Draft
                         </span>
                       )}
@@ -214,19 +281,22 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-1">
                         <Users className="w-4 h-4" />
-                        {event.confirmed_count}/{event.capacity} registered
+                        {event.confirmed_count}/{event.capacity} registerations
                       </div>
+                      {event.is_full && (
+                        <div className="flex items-center gap-1  text-xs text-red-600 border border-red-800 px-2 py-1 rounded-2xl">
+                          <AlertTriangle className="w-3 h-3 " />
+                          Event Full
+                        </div>
+                      )}
                     </div>
-
-                    {event.is_full && (
-                      <div className="flex items-center gap-1 mt-2 text-xs text-red-600">
-                        <AlertTriangle className="w-3 h-3" />
-                        Event Full
-                      </div>
-                    )}
                   </div>
 
-                  <Button variant="outline" size="sm" className="ml-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-4 dark:border-gray-500"
+                  >
                     View Details
                   </Button>
                 </div>

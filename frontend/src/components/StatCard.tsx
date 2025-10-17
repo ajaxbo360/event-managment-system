@@ -22,7 +22,9 @@ const StatCard: React.FC<StatCardProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-            <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
+            <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {value}
+            </h3>
             {description && (
               <p className="text-xs text-gray-500 mt-1">{description}</p>
             )}

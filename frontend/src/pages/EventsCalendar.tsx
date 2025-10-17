@@ -134,7 +134,6 @@ const EventsCalendar: React.FC = () => {
       backgroundColor = "#9ca3af"; // gray (draft)
       borderColor = "#6b7280";
     } else if (eventData.is_joined) {
-      // User has joined this event - show in GREEN
       backgroundColor = "#10b981"; // green (joined)
       borderColor = "#059669";
     } else if (eventData.is_full) {
@@ -187,11 +186,11 @@ const EventsCalendar: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <CalendarIcon className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2 dark:text-white">
+            <CalendarIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             Events Calendar
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 mt-1 dark:text-gray-400">
             View and manage your event schedule
           </p>
         </div>
@@ -201,7 +200,7 @@ const EventsCalendar: React.FC = () => {
           <Button
             variant={showDrafts ? "default" : "outline"}
             onClick={() => setShowDrafts(!showDrafts)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 cursor-pointer"
           >
             {showDrafts ? "✓ Showing Drafts" : "Show Draft Events"}
           </Button>
@@ -209,7 +208,7 @@ const EventsCalendar: React.FC = () => {
       </div>
 
       {/* Legend */}
-      <Alert>
+      <Alert className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <Info className="w-4 h-4" />
         <AlertDescription>
           <div className="flex flex-wrap items-center gap-4 text-sm">
@@ -237,7 +236,7 @@ const EventsCalendar: React.FC = () => {
       </Alert>
 
       {/* Calendar */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
           <div style={{ height: "700px" }}>
             <Calendar
@@ -269,10 +268,12 @@ const EventsCalendar: React.FC = () => {
 
       {/* Stats Footer */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
+        <Card className="">
           <CardContent className="p-4 text-center">
-            <p className="text-sm text-gray-600">Total Events</p>
-            <p className="text-2xl font-bold text-gray-900">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Total Events
+            </p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
               {calendarEvents.length}
             </p>
           </CardContent>

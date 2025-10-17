@@ -16,7 +16,7 @@ const authService = {
     name: data.name,
     email: data.email,
     password: data.password,
-    password_confirmation: data.passwordConfirmation,
+    password_confirmation: data.password_confirmation,
     });
     
     return response.data;

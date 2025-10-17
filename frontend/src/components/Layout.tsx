@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import Header from "./Header";
-import Sidebar from "./Sidebar";
+import Header from "./Header.tsx";
+import Sidebar from "./Sidebar.tsx";
 
 interface LayoutProps {
   children?: React.ReactNode;
@@ -9,7 +9,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen dark:bg-gray-950 bg-gray-50 transition-colors">
       {/* Header  */}
       <Header />
 

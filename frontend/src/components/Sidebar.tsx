@@ -1,8 +1,8 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext.tsx";
 import { Home, Calendar, BookCheck, Shield } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils.ts";
 
 interface NavItem {
   to: string;
@@ -47,7 +47,7 @@ const Sidebar: React.FC = () => {
     <>
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col mt-16">
-        <div className="flex flex-col flex-grow bg-white border-r border-gray-200 pt-5 pb-4 overflow-y-auto">
+        <div className="flex flex-col flex-grow bg-white border-r border-gray-200  dark:border-none pt-5 pb-4 overflow-y-auto dark:bg-gray-900">
           <nav className="flex-1 px-3 space-y-1">
             {filteredNavItems.map((item) => (
               <NavLink

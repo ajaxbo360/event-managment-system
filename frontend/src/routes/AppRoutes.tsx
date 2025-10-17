@@ -7,6 +7,8 @@ import { useAuth } from "@/contexts/AuthContext.tsx";
 import Register from "@/pages/Register.tsx";
 import Layout from "@/components/Layout.tsx";
 import EventsCalendar from "@/pages/EventsCalendar.tsx";
+import EventDetails from "@/pages/EventDetails.tsx";
+import MyEvents from "@/pages/MyEvents.tsx";
 
 const AppRoutes: React.FC = () => {
   const { user, loading } = useAuth();
@@ -44,8 +46,8 @@ const AppRoutes: React.FC = () => {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="calendar" element={<EventsCalendar />} />
-
-        {/* We'll add more routes here: calendar, my-events, admin, event-details */}
+        <Route path="events/:id" element={<EventDetails />} />
+        <Route path="my-events" element={<MyEvents />} />
       </Route>
 
       {/* Default redirect */}

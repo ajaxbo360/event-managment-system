@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "../contexts/AuthContext.tsx";
+import { Input } from "@/components/ui/input.tsx";
+import { Button } from "@/components/ui/button.tsx";
+import { Alert, AlertDescription } from "@/components/ui/alert.tsx";
 import {
   Calendar,
   Mail,
@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +38,11 @@ const Register = () => {
     setError("");
 
     if (formData.password !== formData.password_confirmation) {
-      setError("Passwords do not match");
+      // setError("Passwords do not match");
+      // setError("Passwords do not match");
+      toast.error("Validation Error", {
+        description: "Passwords do not match",
+      });
       return;
     }
 
@@ -51,13 +56,19 @@ const Register = () => {
     try {
       await register(formData);
       setSuccess(true);
+      toast.success("Account Created!", {
+        description: "Successfully registered. Please login to continue.",
+      });
       setTimeout(() => {
         navigate("/login");
       }, 2000);
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      const errorMsg =
+        err.response?.data?.message || "Registration failed. Please try again.";
+      setError(errorMsg);
+      toast.error("Registration Failed", {
+        description: errorMsg,
+      });
     } finally {
       setLoading(false);
     }
@@ -188,7 +199,7 @@ const Register = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="John Doe"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-white"
                     required
                   />
                 </div>
@@ -210,7 +221,7 @@ const Register = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="you@example.com"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-white"
                     required
                   />
                 </div>
@@ -232,7 +243,7 @@ const Register = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="At least 8 characters"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-white"
                     minLength={8}
                     required
                   />
@@ -255,7 +266,7 @@ const Register = () => {
                     value={formData.password_confirmation}
                     onChange={handleChange}
                     placeholder="Re-enter your password"
-                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                    className="pl-10 h-12 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:bg-white"
                     required
                   />
                 </div>
