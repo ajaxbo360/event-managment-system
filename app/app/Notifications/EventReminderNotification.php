@@ -54,6 +54,7 @@ class EventReminderNotification extends Notification
         if ($minutesUntilEvent > 0) {
             $timeUntilEvent .= " {$minutesUntilEvent} minute" . ($minutesUntilEvent != 1 ? 's' : '');
         }
+        $eventUrl = config('app.frontend_url', 'http://localhost:3000') . '/events/' . $this->event->id;
 
         return (new MailMessage)
             ->subject('Reminder: ' . $this->event->name . ' is Today!')
@@ -64,7 +65,7 @@ class EventReminderNotification extends Notification
             ->line('**Duration:** ' . $durationText)
             ->line('**Location:** ' . $this->event->location)
             ->line('The event starts in approximately **' . $timeUntilEvent . '**.')
-            ->action('View Event Details', "http://localhost:3000/events/{$this->event->id}")
+            ->action('View Event Details', $eventUrl)
             ->line('See you there!');
     }
 

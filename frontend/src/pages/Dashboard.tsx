@@ -187,7 +187,7 @@ const Dashboard: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleViewEvent(event.id)}
-                      className="border-orange-300 text-orange-700 hover:bg-orange-100 whitespace-nowrap"
+                      className=" text-gray-700 hover:bg-orange-100 whitespace-nowrap"
                     >
                       View Details
                     </Button>
@@ -237,7 +237,11 @@ const Dashboard: React.FC = () => {
               Next 7 days • {upcomingEvents.length} events
             </p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/calendar")}>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/calendar")}
+            className="cursor-pointer"
+          >
             View Calendar
           </Button>
         </CardHeader>
@@ -256,7 +260,7 @@ const Dashboard: React.FC = () => {
                         {event.name}
                       </h4>
                       {event.status === "draft" && (
-                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-200 text-gray-700 rounded dark:text-gray-300">
+                        <span className="px-2 py-0.5 text-xs font-medium bg-gray-200 dark:bg-gray-500 text-gray-700  rounded dark:text-gray-300">
                           Draft
                         </span>
                       )}
@@ -295,7 +299,7 @@ const Dashboard: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="ml-4 dark:border-gray-500"
+                    className="ml-4 dark:border-gray-500 cursor-pointer"
                   >
                     View Details
                   </Button>

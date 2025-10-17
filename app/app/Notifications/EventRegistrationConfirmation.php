@@ -41,6 +41,7 @@ class EventRegistrationConfirmation extends Notification
         $durationFormatted = $hours > 0
             ? ($minutes > 0 ? "{$hours}h {$minutes}m" : "{$hours}h")
             : "{$minutes}m";
+        $eventUrl = config('app.frontend_url', 'http://localhost:3000') . '/events/' . $this->event->id;
 
         return (new MailMessage)
             ->subject('Event Registration Confirmed: ' . $this->event->name)
@@ -53,7 +54,7 @@ class EventRegistrationConfirmation extends Notification
             ->line('**Location:** ' . $this->event->location)
             ->line('')
             ->line('**Description:** ' . $this->event->description)
-            ->action('View Event Details', url('/events/' . $this->event->id))
+            ->action('View Event Details', $eventUrl)
             ->line('')
             ->line('We look forward to seeing you there!')
             ->line('If you need to cancel your registration, please log in to your account.')
