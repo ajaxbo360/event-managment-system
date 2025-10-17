@@ -15,11 +15,11 @@ class CheckEventCapacity
     {
         $event = $request->route('event');
 
-        // Check if event is full
-        if ($event->isFull()) {
+        if ($event->isFull() && $event->isWaitlistFull()) {
             return response()->json([
-                'message' => 'Event is at full capacity',
+                'message' => 'Event and waitlist are both full',
                 'available_spots' => 0,
+                'available_waitlist_spots' => 0,
             ], 400);
         }
 

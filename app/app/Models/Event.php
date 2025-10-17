@@ -75,7 +75,15 @@ class Event extends Model
     {
         return $this->users()->count() >= $this->capacity;
     }
-
+    /**
+     * Check if waitlist is full
+     */
+    public function isWaitlistFull(): bool
+    {
+        return $this->users()
+            ->wherePivot('status', 'waitlist')
+            ->count() >= $this->waitlist_capacity;
+    }
     public function availableSpots(): int
     {
         return max(0, $this->capacity - $this->users()->count());
