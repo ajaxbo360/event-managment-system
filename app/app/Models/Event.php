@@ -73,7 +73,16 @@ class Event extends Model
      */
     public function isFull(): bool
     {
-        return $this->users()->count() >= $this->capacity;
+        // Only count CONFIRMED users, not waitlist
+        $confirmedCount = $this->users()->wherePivot('status', 'confirmed')->count();
+        return $confirmedCount >= $this->capacity;
+    }
+
+    public function availableSpots(): int
+    {
+        // Only count CONFIRMED users
+        $confirmedCount = $this->users()->wherePivot('status', 'confirmed')->count();
+        return max(0, $this->capacity - $confirmedCount);
     }
     /**
      * Check if waitlist is full
@@ -83,10 +92,6 @@ class Event extends Model
         return $this->users()
             ->wherePivot('status', 'waitlist')
             ->count() >= $this->waitlist_capacity;
-    }
-    public function availableSpots(): int
-    {
-        return max(0, $this->capacity - $this->users()->count());
     }
 
     public function isPublished(): bool

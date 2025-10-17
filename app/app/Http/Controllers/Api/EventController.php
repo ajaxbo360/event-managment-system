@@ -137,7 +137,7 @@ class EventController extends Controller
 
             DB::transaction(function () use ($event, $user, $status) {
                 $event->users()->attach($user->id, [
-                    'status' => $status,  // ADDED
+                    'status' => $status,
                     'registered_at' => now(),
                 ]);
             });
@@ -149,7 +149,7 @@ class EventController extends Controller
                 'user_id' => $user->id,
                 'event_id' => $event->id,
                 'event_name' => $event->name,
-                'status' => $status,  // ADDED
+                'status' => $status,
             ]);
 
             // IMPROVED: Different messages for confirmed vs waitlist
@@ -195,8 +195,6 @@ class EventController extends Controller
 
                 // Remove user from event
                 $event->users()->detach($user->id);
-
-                // If a CONFIRMED user left, promote first person from waitlist
                 if ($userStatus === 'confirmed') {
                     $firstWaitlistUser = $event->users()
                         ->wherePivot('status', 'waitlist')
@@ -210,7 +208,7 @@ class EventController extends Controller
                         ]);
 
                         // Notify promoted user
-                        $firstWaitlistUser->notify(new WaitlistPromotedNotification($event));
+                        //$firstWaitlistUser->notify(new WaitlistPromotedNotification($event));
 
                         Log::info('User promoted from waitlist', [
                             'promoted_user_id' => $firstWaitlistUser->id,
