@@ -156,7 +156,7 @@ const Dashboard: React.FC = () => {
               >
                 <Bell className="w-5 h-5 text-orange-600 animate-pulse" />
                 <AlertDescription>
-                  <div className="flex items-start justify-between flex-wrap gap-4">
+                  <div className="flex w-full items-start justify-between flex-wrap gap-4 ">
                     <div className="flex-1">
                       <p className="font-semibold text-orange-900 flex items-center gap-2 mb-1">
                         {isEventToday ? "🔔 Event Today!" : "📅 Event Tomorrow"}
@@ -183,14 +183,16 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewEvent(event.id)}
-                      className=" text-gray-700 hover:bg-orange-100 whitespace-nowrap"
-                    >
-                      View Details
-                    </Button>
+                    <div className="lex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewEvent(event.id)}
+                        className=" text-gray-700 hover:bg-orange-100 whitespace-nowrap flex flex-1"
+                      >
+                        View Details
+                      </Button>
+                    </div>
                   </div>
                 </AlertDescription>
               </Alert>
