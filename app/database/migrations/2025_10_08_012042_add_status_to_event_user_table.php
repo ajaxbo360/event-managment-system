@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::table('event_user', function (Blueprint $table) {
             $table->enum('status', ['confirmed', 'waitlist'])
-                ->default('confirmed')
-                ->after('user_id');
+                ->default('confirmed');
         });
     }
 

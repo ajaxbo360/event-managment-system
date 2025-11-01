@@ -31,6 +31,7 @@ import {
   XCircle,
   AlertTriangle,
   ExternalLink,
+  UserPlus,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -81,15 +82,22 @@ const EventDetails: React.FC = () => {
 
       const response = await eventsService.joinEvent(event.id);
 
-      toast.success("Event Joined! 🎉", {
-        description: `You've successfully registered for ${event.name}`,
-      });
+      // Check if user was added to waitlist or confirmed
+      const status = response.registration_status;
+
+      if (status === "waitlist") {
+        toast.success("Added to Waitlist! 📋", {
+          description: `You've been added to the waitlist for ${event.name}. You'll be notified if a spot opens up.`,
+        });
+      } else {
+        toast.success("Event Joined! 🎉", {
+          description: `You've successfully registered for ${event.name}`,
+        });
+      }
 
       // Refresh event details to show updated status
       await loadEventDetails();
-
-      // Show success message
-      setError(""); // Clear any previous errors
+      setError("");
     } catch (err: any) {
       if (err.response?.status === 409) {
         // Conflict detected
@@ -113,11 +121,6 @@ const EventDetails: React.FC = () => {
   const handleLeaveEvent = async () => {
     if (!event) return;
 
-    // const confirmed = window.confirm(
-    //   "Are you sure you want to leave this event?"
-    // );
-    // if (!confirmed) return;
-
     try {
       setActionLoading(true);
       setError("");
@@ -128,6 +131,7 @@ const EventDetails: React.FC = () => {
       });
       // Refresh event details
       await loadEventDetails();
+      setShowLeaveDialog(false);
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || "Failed to leave event";
       setError(errorMsg);
@@ -145,6 +149,49 @@ const EventDetails: React.FC = () => {
       `http://localhost:8000/nova/resources/events/${event?.id}`,
       "_blank"
     );
+  };
+
+  // HELPER: Determine if user can join
+  const canJoin = () => {
+    if (!event) return false;
+    if (event.is_joined) return false; // Already joined
+    // Can join if spots available OR waitlist available
+    return !event.is_full || !event.is_waitlist_full;
+  };
+
+  // HELPER: Determine button text and style
+  const getJoinButtonConfig = () => {
+    if (!event)
+      return {
+        text: "Join Event",
+        variant: "default" as const,
+        icon: <UserPlus className="w-4 h-4" />,
+      };
+
+    if (!event.is_full) {
+      // Spots available
+      return {
+        text: "Join Event",
+        variant: "default" as const,
+        icon: <CheckCircle className="w-4 h-4" />,
+        className:
+          "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700",
+      };
+    } else if (!event.is_waitlist_full) {
+      // Full but waitlist available
+      return {
+        text: "Join Waitlist",
+        variant: "outline" as const,
+        icon: <UserPlus className="w-4 h-4" />,
+        className: "border-orange-500 text-orange-600 hover:bg-orange-50",
+      };
+    }
+
+    return {
+      text: "Full",
+      variant: "outline" as const,
+      icon: <XCircle className="w-4 h-4" />,
+    };
   };
 
   if (loading) {
@@ -175,6 +222,7 @@ const EventDetails: React.FC = () => {
 
   const eventDate = new Date(event.date_time);
   const eventEndTime = new Date(eventDate.getTime() + event.duration * 60000);
+  const buttonConfig = getJoinButtonConfig();
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -187,6 +235,7 @@ const EventDetails: React.FC = () => {
         <ArrowLeft className="w-4 h-4" />
         Back
       </Button>
+
       {/* Event Header */}
       <Card>
         <CardHeader>
@@ -199,15 +248,28 @@ const EventDetails: React.FC = () => {
                     Draft
                   </span>
                 )}
-                {event.is_joined && (
+
+                {/* UPDATED: Show user's specific status */}
+                {event.registration_status === "confirmed" && (
                   <span className="px-3 py-1 text-sm font-medium bg-green-100 text-green-700 rounded-full flex items-center gap-1">
                     <CheckCircle className="w-4 h-4" />
-                    Joined
+                    Confirmed
                   </span>
                 )}
+
+                {event.registration_status === "waitlist" && (
+                  <span className="px-3 py-1 text-sm font-medium bg-orange-100 text-orange-700 rounded-full flex items-center gap-1">
+                    <AlertTriangle className="w-4 h-4" />
+                    On Waitlist
+                  </span>
+                )}
+
+                {/* UPDATED: Show capacity status */}
                 {event.is_full && !event.is_joined && (
                   <span className="px-3 py-1 text-sm font-medium bg-red-100 text-red-700 rounded-full">
-                    Full
+                    {event.is_waitlist_full
+                      ? "Fully Booked"
+                      : "Full - Waitlist Available"}
                   </span>
                 )}
               </div>
@@ -249,7 +311,7 @@ const EventDetails: React.FC = () => {
             <div className="flex items-start gap-3">
               <Clock className="w-5 h-5 text-purple-600 mt-0.5" />
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 ">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                   Duration
                 </p>
                 <p className="font-semibold text-gray-900 dark:text-gray-600">
@@ -277,15 +339,24 @@ const EventDetails: React.FC = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Capacity
                 </p>
+                {/* UPDATED: Show confirmed vs total capacity */}
                 <p className="font-semibold text-gray-900 dark:text-gray-600">
                   {event.confirmed_count}/{event.capacity}
                   <span className="text-sm font-normal text-gray-600 ml-2 dark:text-gray-600">
-                    ({event.available_spots} spots left)
+                    ({event.available_spots}{" "}
+                    {event.available_spots === 1 ? "spot" : "spots"} left)
                   </span>
                 </p>
+
+                {/* UPDATED: Show waitlist info */}
                 {event.waitlist_capacity > 0 && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-gray-600 mt-1">
                     Waitlist: {event.waitlist_count}/{event.waitlist_capacity}
+                    {event.available_waitlist_spots > 0 && (
+                      <span className="text-orange-600 ml-1">
+                        ({event.available_waitlist_spots} available)
+                      </span>
+                    )}
                   </p>
                 )}
               </div>
@@ -337,16 +408,32 @@ const EventDetails: React.FC = () => {
             </Alert>
           )}
 
-          {/* Action Buttons */}
+          {/* UPDATED: Action Buttons with Waitlist Support */}
           <div className="pt-4 border-t">
             {event.is_joined ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-semibold">
-                    You're registered for this event
-                  </span>
-                </div>
+                {/* Show different message based on status */}
+                {event.registration_status === "confirmed" ? (
+                  <div className="flex items-center gap-2 text-green-700">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="font-semibold">
+                      You're confirmed for this event
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-orange-700">
+                    <AlertTriangle className="w-5 h-5" />
+                    <div>
+                      <span className="font-semibold block">
+                        You're on the waitlist
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        You'll be notified if a spot becomes available
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   variant="destructive"
                   onClick={() => setShowLeaveDialog(true)}
@@ -358,33 +445,60 @@ const EventDetails: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {event.is_full ? (
-                  <Alert>
-                    <AlertTriangle className="w-4 h-4" />
+                {/* Show join button or full message */}
+                {canJoin() ? (
+                  <div className="space-y-2">
+                    {event.is_full && !event.is_waitlist_full && (
+                      <Alert className="bg-orange-50 border-orange-200">
+                        <AlertTriangle className="w-4 h-4 text-orange-600" />
+                        <AlertDescription className="text-orange-800">
+                          This event is full. You can join the waitlist and will
+                          be automatically confirmed if someone leaves.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <Button
+                      onClick={handleJoinEvent}
+                      disabled={actionLoading}
+                      variant={buttonConfig.variant}
+                      className={`w-full md:w-auto flex items-center gap-2 ${
+                        buttonConfig.className || ""
+                      }`}
+                    >
+                      {buttonConfig.icon}
+                      {actionLoading ? "Joining..." : buttonConfig.text}
+                    </Button>
+                  </div>
+                ) : (
+                  <Alert variant="destructive">
+                    <XCircle className="w-4 h-4" />
                     <AlertDescription>
-                      This event is at full capacity. Waitlist is also full.
+                      This event and its waitlist are completely full. Please
+                      check back later.
                     </AlertDescription>
                   </Alert>
-                ) : (
-                  <Button
-                    onClick={handleJoinEvent}
-                    disabled={actionLoading}
-                    className="w-full md:w-auto bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
-                  >
-                    {actionLoading ? "Joining..." : "Join Event"}
-                  </Button>
                 )}
               </div>
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Leave Confirmation Dialog */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Leave Event?</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to leave <strong>{event?.name}</strong>?
+              {event?.registration_status === "confirmed" &&
+                event?.waitlist_count > 0 && (
+                  <span className="block mt-2 text-orange-600">
+                    Note: If you leave, the next person on the waitlist will be
+                    automatically confirmed.
+                  </span>
+                )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

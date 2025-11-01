@@ -37,20 +37,30 @@ export interface Event {
   name: string;
   description: string;
   date_time: string;
-  duration: number; // minutes
+  duration: number; // in minutes
   location: string;
   capacity: number;
   waitlist_capacity: number;
-  status: 'published' | 'draft';
-  confirmed_count: number;
-  waitlist_count: number;
-  available_spots: number;
-  available_waitlist_spots: number;
-  is_full: boolean;
-  is_waitlist_full: boolean;
-  is_joined: boolean
-  registered_at?: string;
+  status: 'draft' | 'published';
+  
+  // Counts
+  confirmed_count: number;        // NEW: number of confirmed users
+  waitlist_count: number;         // NEW: number of waitlisted users
+  registered_count?: number;      // OLD: keep for backward compatibility
+  
+  // Available spots
+  available_spots: number;        // spots available in main capacity
+  available_waitlist_spots: number; // NEW: spots available in waitlist
+  
+  // Status flags
+  is_full: boolean;               // main capacity is full
+  is_waitlist_full: boolean;      // NEW: waitlist is full
+  is_joined: boolean;             // user has joined (confirmed or waitlist)
+  
+  // User's specific registration status
+  registration_status: 'confirmed' | 'waitlist' | null; // NEW: user's specific status
 }
+
 
 export interface ConflictingEvent {
   id: number;
@@ -61,7 +71,7 @@ export interface ConflictingEvent {
 
 export interface JoinEventResponse {
   message: string;
-  is_joined: boolean
+   registration_status: 'confirmed' | 'waitlist' | null;
   event: Event;
   conflicting_events?: ConflictingEvent[];
 }

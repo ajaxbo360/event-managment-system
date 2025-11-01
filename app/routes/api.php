@@ -19,7 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Event routes
     Route::get('/events', [EventController::class, 'index']);
     Route::get('/events/{event}', [EventController::class, 'show']);
-    Route::post('/events/{event}/join', [EventController::class, 'join']);
+    Route::post('/events/{event}/join', [EventController::class, 'join'])->middleware('check.capacity');
     Route::post('/events/{event}/leave', [EventController::class, 'leave']);
     Route::get('/my-events', [EventController::class, 'myEvents']);
 });

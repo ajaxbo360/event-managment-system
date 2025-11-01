@@ -45,10 +45,11 @@ class Event extends Model
     /**
      * Relationships
      */
-
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)->withPivot("status", "registered_at")->withTimestamps();
+        return $this->belongsToMany(User::class)
+            ->withPivot("status", "registered_at")
+            ->withTimestamps();
     }
 
     public function confirmedUsers()
@@ -56,6 +57,14 @@ class Event extends Model
         return $this->belongsToMany(User::class, 'event_user')
             ->withPivot(['status', 'registered_at'])
             ->wherePivot('status', 'confirmed');
+    }
+
+    public function waitlistedUsers()
+    {
+        return $this->belongsToMany(User::class, 'event_user')
+            ->withPivot(['status', 'registered_at'])
+            ->wherePivot('status', 'waitlist')
+            ->orderBy('event_user.registered_at', 'asc'); // FIFO - First In First Out
     }
 
     /**
@@ -69,30 +78,82 @@ class Event extends Model
     }
 
     /**
-     * Helper Methods
+     * Helper Methods - Counts
      */
+    public function confirmedCount(): int
+    {
+        return $this->users()->wherePivot('status', 'confirmed')->count();
+    }
+
+    public function waitlistCount(): int
+    {
+        return $this->users()->wherePivot('status', 'waitlist')->count();
+    }
+
+    /**
+     * Helper Methods - Capacity Checks
+     */
+
     public function isFull(): bool
     {
-        // Only count CONFIRMED users, not waitlist
-        $confirmedCount = $this->users()->wherePivot('status', 'confirmed')->count();
-        return $confirmedCount >= $this->capacity;
+        return $this->confirmedCount() >= $this->capacity;
     }
 
     public function availableSpots(): int
     {
-        // Only count CONFIRMED users
-        $confirmedCount = $this->users()->wherePivot('status', 'confirmed')->count();
-        return max(0, $this->capacity - $confirmedCount);
+        return max(0, $this->capacity - $this->confirmedCount());
     }
+
     /**
      * Check if waitlist is full
      */
     public function isWaitlistFull(): bool
     {
-        return $this->users()
-            ->wherePivot('status', 'waitlist')
-            ->count() >= $this->waitlist_capacity;
+        return $this->waitlistCount() >= $this->waitlist_capacity;
     }
+
+    public function availableWaitlistSpots(): int
+    {
+        return max(0, $this->waitlist_capacity - $this->waitlistCount());
+    }
+
+    /**
+     * Can accept new registrations (main spots or waitlist)
+     */
+    public function canAcceptRegistrations(): bool
+    {
+        return !$this->isFull() || !$this->isWaitlistFull();
+    }
+
+    /**
+     * NEW: Promote first person from waitlist to confirmed
+     * Returns the promoted user or null
+     */
+    public function promoteFromWaitlist(): ?User
+    {
+        // Check if there's space available
+        if ($this->isFull()) {
+            return null; // No space available
+        }
+
+        // Get first waitlisted user (FIFO - First In First Out)
+        $waitlistedUser = $this->waitlistedUsers()->first();
+
+        if (!$waitlistedUser) {
+            return null; // No one on waitlist
+        }
+
+        // Update their status from 'waitlist' to 'confirmed'
+        $this->users()->updateExistingPivot($waitlistedUser->id, [
+            'status' => 'confirmed',
+        ]);
+
+        return $waitlistedUser;
+    }
+
+    /**
+     * Status Checks
+     */
 
     public function isPublished(): bool
     {
@@ -107,6 +168,7 @@ class Event extends Model
     /**
      * Scopes
      */
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
@@ -115,13 +177,5 @@ class Event extends Model
     public function scopeUpcoming($query)
     {
         return $query->where('date_time', '>', now());
-    }
-
-    /**
-     * Can accept new registrations (main spots or waitlist)
-     */
-    public function canAcceptRegistrations(): bool
-    {
-        return !$this->isFull() || !$this->isWaitlistFull();
     }
 }
